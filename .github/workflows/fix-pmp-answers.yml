@@ -23,5 +23,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add PMP_Baza_Pytan_1800.html
-          git diff --staged --quiet || git commit -m "Fix: uzupelniono brakujace odpowiedzi przez Claude AI"
+          git diff --staged --quiet || git commit -m "Fix: uzupelniono odpowiedzi"
           git push
