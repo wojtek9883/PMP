@@ -234,9 +234,14 @@ def main():
                         answers[qid] = ans
                         done += 1
 
-                # Zapisz postęp
-                with open(progress_path, "w") as f:
-                    json.dump(answers, f)
+                # Aplikuj i zapisz HTML po kazdym batchu
+                # Postep jest w samym pliku HTML - przy kolejnym runie
+                # skrypt widzi juz uzupelnione odpowiedzi i pomija je
+                for q in questions:
+                    key = f"T{q['t']}-Q{q['n']}"
+                    if q.get("a") is None and key in answers:
+                        q["a"] = answers[key]
+                save_questions(questions, original_html, out_path)
 
                 time.sleep(args.delay)
 
@@ -264,29 +269,20 @@ def main():
         print()
         ok(f"Uzupełniono {done} odpowiedzi, błędów: {errors}")
 
-    # Aplikuj odpowiedzi do pytań
-    fixed_count = 0
-    for q in questions:
-        key = f"T{q['t']}-Q{q['n']}"
-        if q.get("a") is None and key in answers:
-            q["a"] = answers[key]
-            fixed_count += 1
+    # Policz ile uzupelniono w tej sesji
+    fixed_count = sum(1 for q in questions if q.get("a") is not None and 
+                      f"T{q['t']}-Q{q['n']}" in answers)
+    info(f"Uzupelniono w tej sesji: {fixed_count} odpowiedzi")
 
-    info(f"Aplikuję {fixed_count} odpowiedzi...")
-
-    # Zapisz wynikowy HTML
+    # Zapisz finalny HTML
     size = save_questions(questions, original_html, out_path)
     print()
     ok(f"Zapisano: {out_path}  ({size/1024:.0f} KB)")
 
-    # Usuń plik postępu jeśli wszystko OK
     remaining_null = sum(1 for q in questions if q.get("a") is None and q.get("q"))
-    if remaining_null == 0 and progress_path.exists():
-        progress_path.unlink()
-        ok(f"Usunięto plik postępu {progress_path}")
-    elif remaining_null > 0:
-        warn(f"Pozostało {remaining_null} pytań bez odpowiedzi (błędy API)")
-        warn(f"Uruchom ponownie — skrypt wznowi od miejsca przerwania (plik: {progress_path})")
+    if remaining_null > 0:
+        warn(f"Pozostalo {remaining_null} pytan bez odpowiedzi")
+        warn("Uruchom workflow ponownie - skrypt uzupelni brakujace")
 
     print()
     bold("✅ Gotowe! Możesz teraz wgrać plik do repo i zrobić deploy.")
