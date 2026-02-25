@@ -16,12 +16,12 @@ jobs:
       - name: Uruchom skrypt
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: python3 fix_pmp_answers.py PMP_Baza_Pytan_1800.html
+        run: python3 fix_pmp_answers.py PMP_Baza_Pytan_1800.html --batch 10 --delay 1
 
       - name: Zapisz zmiany
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add PMP_Baza_Pytan_1800.html
-          git diff --staged --quiet || git commit -m "Fix: uzupelniono odpowiedzi"
+          git diff --staged --quiet || git commit -m "Fix: uzupelniono odpowiedzi [batch]"
           git push
